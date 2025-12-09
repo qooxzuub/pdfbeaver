@@ -19,6 +19,14 @@ dependencies = [
     "pdfminer.six==20251107",
     "numpy",
 ]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["pdf"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -42,8 +50,13 @@ dev = [
 [project.urls]
 "Homepage" = "https://github.com/qooxzuub/pdfbeaver"
 "Bug Tracker" = "https://github.com/qooxzuub/pdfbeaver/issues"
+# "Documentation" = "https://pdfbeaver.readthedocs.io" # not yet
 
 [tool.isort]
 profile = "black"
 
+[tool.setuptools.package-data]
+"pdfbeaver" = ["py.typed"]
+
 [tool.setuptools_scm]
+
