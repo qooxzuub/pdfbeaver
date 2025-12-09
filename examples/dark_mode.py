@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+"""Darken colors in a PDF file"""
+
 import sys
 
 import pikepdf

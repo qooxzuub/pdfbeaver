@@ -9,6 +9,8 @@ description = "A library for manipulating PDF content streams."
 authors = [
     { name = "qooxzoob", email = "154452450+qooxzuub@users.noreply.github.com" }
 ]
+license = "MPL-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.8"
 
 dependencies = [
@@ -34,8 +36,12 @@ dev = [
     "pylint",
     "pytest-mock",
     "isort",
+    "sphinx-rtd-theme",
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/qooxzuub/pdfbeaver"
+"Bug Tracker" = "https://github.com/qooxzuub/pdfbeaver/issues"
 
 [tool.isort]
 profile = "black"
