@@ -12,10 +12,9 @@ for specific PDF operators (like ``Tj`` for text or ``re`` for rectangles).
 import logging
 
 from .api import ProcessingOptions, modify_page, process
-from .base_state_tracker import BaseStateTracker
 from .editor import ORIGINAL_BYTES, NormalizedOperand, StreamContext
-from .literate_state_tracker import LiterateStateTracker
 from .registry import HandlerRegistry, default_registry
+from .state_tracker import StateTracker
 from .utils.pdf_conversion import normalize_pdf_operand
 from .utils.pdf_geometry import extract_text_position
 
@@ -49,8 +48,7 @@ __all__ = [
     "HandlerRegistry",
     "StreamContext",
     "NormalizedOperand",
-    "BaseStateTracker",
-    "LiterateStateTracker",
+    "StateTracker",
     "extract_text_position",
     "normalize_pdf_operand",
     "UNCHANGED",

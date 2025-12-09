@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 
 TZ_TOL = 0.001
 TF_TOL = 0.001
-TM_TOL = 0.0001
-ROUNDING_PLACES = 4
 
 CONVERSION_ERRORS = (ValueError, IndexError, TypeError, OverflowError)
 
@@ -188,16 +186,15 @@ def _handle_tf(operands, operator, state: OptimizerState):
 
 
 def _handle_tm(operands, operator, state: OptimizerState):
-    optimized_op = _try_optimize_tm(operands, state.current_tm)
+    # We cannot optimize Tm -> Td safely without text width calculation,
+    # because any intervening Tj invalidates the state.
+    # We just update the tracker and pass it through.
 
     try:
         # Always update state to the new absolute matrix
         state.current_tm = [float(x) for x in operands]
     except CONVERSION_ERRORS:
         state.current_tm = None
-
-    if optimized_op:
-        return optimized_op
 
     return (operands, operator)
 
@@ -218,34 +215,3 @@ def _handle_td(operands, operator, state: OptimizerState):
         except CONVERSION_ERRORS:
             state.current_tm = None
     return (operands, operator)
-
-
-def _try_optimize_tm(operands, current_tm):
-    """Attempts to convert an absolute Tm to a relative Td."""
-    if current_tm is None:
-        return None
-
-    try:
-        new_tm = [float(x) for x in operands]
-        # Check if a, b, c, d match (scale/rotation/skew)
-        matches_geometry = all(
-            abs(new_tm[i] - current_tm[i]) < TM_TOL for i in range(4)
-        )
-
-        if matches_geometry:
-            a, b, c, d = current_tm[0], current_tm[1], current_tm[2], current_tm[3]
-            e_old, f_old = current_tm[4], current_tm[5]
-            e_new, f_new = new_tm[4], new_tm[5]
-
-            # Only optimize more-or-less diagonal matrices for safety
-            if max(abs(b), abs(c)) < TM_TOL < min(abs(a), abs(d)):
-                tx = (e_new - e_old) / a
-                ty = (f_new - f_old) / d
-                return (
-                    [round(tx, ROUNDING_PLACES), round(ty, ROUNDING_PLACES)],
-                    Operator("Td"),
-                )
-    except CONVERSION_ERRORS:
-        pass
-
-    return None

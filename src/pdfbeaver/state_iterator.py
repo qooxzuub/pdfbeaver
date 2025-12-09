@@ -96,7 +96,12 @@ class StreamStateIterator(PDFPageInterpreter):
         """Consolidates multiple stream objects into a single bytes object."""
         combined_data = bytearray()
         for s in streams:
+            seen_ids = set()
             while hasattr(s, "resolve"):
+                if id(s) in seen_ids:
+                    # loop
+                    break
+                seen_ids.add(id(s))
                 s = s.resolve()
             if hasattr(s, "get_data"):
                 data = s.get_data()

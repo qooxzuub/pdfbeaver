@@ -1,4 +1,4 @@
-# src/pdfbeaver/base_state_tracker.py
+# src/pdfbeaver/state_tracker.py
 """Tracks the PDF Text State parameters as defined in the PDF 1.7 Reference.
 
 Attributes:
@@ -92,16 +92,14 @@ class GraphicsState:
         return new_obj
 
 
-class BaseStateTracker:
+class StateTracker:
     """
-    Standard state tracker. Tracks the CTM (Graphics) and Text Matrices.
+    State tracker. Tracks the CTM (Graphics) and Text Matrices.
 
     This tracker acts as a bridge between the underlying ``pdfminer`` state machine
     and the ``pdfbeaver`` context. It ingests snapshots of the state provided by the
     iterator and makes them accessible in a clean, pythonic format.
 
-    Subclass this if you need to calculate additional metrics (e.g., text cursor
-    position) or track specific operators that are not tracked by default.
     """
 
     def __init__(self):
@@ -162,3 +160,24 @@ class BaseStateTracker:
             "gstate": self.gstate.copy(),
             "font_name": self.textstate.font_name,
         }
+
+    def get_current_user_pos(self) -> np.ndarray:
+        """
+        Returns the (x, y) position of the cursor in User Space.
+
+        Calculated as: Origin(0,0) x Tm x CTM.
+
+        Returns:
+            np.ndarray: A 3-element vector [x, y, 1] representing the cursor position.
+        """
+        # Start of text space (0, 0)
+        p = np.array([0.0, 0.0, 1.0])
+
+        # Apply Text Matrix
+        a, b, c, d, e, f = self.textstate.matrix
+        tm = np.array([[a, b, 0], [c, d, 0], [e, f, 1]])
+
+        # Apply CTM
+        ctm = miner_matrix_to_np(self.gstate.ctm)
+
+        return p @ tm @ ctm

@@ -4,7 +4,11 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import patch
 
+import dark_mode
+import pikepdf
 import pytest
+import redactor  # <--- Corrected from redactor_boxes
+import trivial
 
 # Setup paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -14,9 +18,6 @@ CACHE_DIR = PROJECT_ROOT / "tests" / "cache"
 
 # Ensure examples can be imported
 sys.path.append(str(EXAMPLES_DIR))
-import dark_mode
-import redactor  # <--- Corrected from redactor_boxes
-import trivial
 
 SAMPLE_PDF_URL = "https://www.irs.gov/pub/irs-pdf/f1040.pdf"
 
@@ -88,7 +89,6 @@ def test_generate_smoke_artifacts(complex_pdf_path):
     assert out_redact.exists()
 
     # --- Automated Sanity Checks ---
-    import pikepdf
 
     # Check Redaction:
     with pikepdf.open(out_redact) as pdf:

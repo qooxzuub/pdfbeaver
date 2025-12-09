@@ -14,44 +14,6 @@ def miner_matrix_to_np(m: List) -> np.ndarray:
     return np.array([[m[0], m[1], 0], [m[2], m[3], 0], [m[4], m[5], 1]])
 
 
-def to_python_args(operands: List[Any]) -> List[Any]:
-    """
-    Converts pikepdf/pdfminer operands to standard Python types.
-    Handles Name/PSLiteral cleanup and Decimal->float conversion.
-    """
-    args = []
-    for arg in operands:
-        if isinstance(arg, (pikepdf.Name, PSLiteral)):
-            # Strip leading slash for consistency
-            args.append(str(arg).lstrip("/"))
-        elif isinstance(arg, pikepdf.String):
-            args.append(bytes(arg))
-        elif isinstance(arg, Decimal):
-            args.append(float(arg))
-        else:
-            args.append(arg)
-    return args
-
-
-def format_pdf_value(v: Any) -> bytes:
-    """
-    Formats a Python value into a PDF-compatible byte string.
-    """
-    if isinstance(v, (list, tuple)):
-        return b"[" + b" ".join(format_pdf_value(x) for x in v) + b"]"
-    if isinstance(v, (int, float, Decimal)):
-        return str(v).encode("ascii")
-    if isinstance(v, (pikepdf.Name, PSLiteral)):
-        # Ensure we don't double-slash
-        s = str(v)
-        if not s.startswith("/"):
-            s = "/" + s
-        return s.encode("ascii")
-    if isinstance(v, bool):
-        return b"true" if v else b"false"
-    return str(v).encode("ascii")
-
-
 def normalize_pdf_operand(operand: Any) -> Any:
     """
     Converts pdfminer-specific types (PSLiteral) into pikepdf-compatible types.
@@ -84,6 +46,9 @@ def extract_string_bytes(operand: Any) -> bytes:
         except UnicodeEncodeError:
             return operand.encode("utf-8")
 
+    if isinstance(operand, (int, float, Decimal)):
+        return str(operand).encode("ascii")
+
     # 3. Duck Typing: check for .as_bytes() (e.g. Mocks, older pikepdf)
     if not isinstance(operand, pikepdf.Object) and hasattr(operand, "as_bytes"):
         return operand.as_bytes()
@@ -103,7 +68,10 @@ def extract_string_bytes(operand: Any) -> bytes:
 def font_name_to_string(font_obj: Any) -> str:
     """Extracts a clean string name from a font operand."""
     if isinstance(font_obj, PSLiteral):
-        return font_obj.name
+        name = font_obj.name
+        if isinstance(font_obj.name, bytes):
+            return name.decode("ascii")
+        return name
 
     if isinstance(font_obj, pikepdf.Name):
         return str(font_obj).lstrip("/")

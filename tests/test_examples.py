@@ -11,11 +11,7 @@ sys.path.append(str(EXAMPLES_DIR))
 
 import dark_mode
 import redactor
-
-# Import them now (safe because we moved logic into main)
 import trivial
-
-# import vector_optimizer  (Add this if you refactor it similarly)
 
 
 @pytest.fixture

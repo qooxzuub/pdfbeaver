@@ -1,5 +1,4 @@
 # tests/strategies.py
-import pikepdf
 from hypothesis import strategies as st
 
 # 1. Basic Types

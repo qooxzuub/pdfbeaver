@@ -1,6 +1,4 @@
 # tests/test_basic_editing.py
-import pikepdf
-import pytest
 
 import pdfbeaver as beaver
 

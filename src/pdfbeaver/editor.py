@@ -80,7 +80,7 @@ class StreamContext:
     Attributes:
         pre_input (Dict[str, Any]): State snapshot *before* the current operator ran.
         post_input (Dict[str, Any]): State snapshot *after* the current operator ran.
-        tracker (BaseStateTracker): Reference to the active state tracker instance.
+        tracker (StateTracker): Reference to the active state tracker instance.
         editor (StreamEditor): Reference to the parent editor instance.
     """
 

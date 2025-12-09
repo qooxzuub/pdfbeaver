@@ -3,9 +3,9 @@ requires = ["setuptools>=65.5", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pdf-font-replacer"
+name = "pdfbeaver"
 version = "0.1.0"
-description = "A tool for font replacement in PDFs."
+description = "A library for manipulating PDF content streams."
 authors = [
     { name = "qooxzoob", email = "154452450+qooxzuub@users.noreply.github.com" }
 ]

@@ -15,13 +15,13 @@ from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdftypes import PDFStream
 from pdfminer.psparser import LIT
 
-from .base_state_tracker import BaseStateTracker
 from .editor import StreamEditor
 from .optimization import optimize_ops
 
 # Import the default registry from the sibling module
 from .registry import HandlerRegistry, default_registry
 from .state_iterator import StreamStateIterator
+from .state_tracker import StateTracker
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +36,8 @@ class ProcessingOptions:
             absolute text matrices into relative moves). Defaults to True.
         recurse_xobjects (bool): If True, recursively descends into and modifies
             Form XObjects found in the page resources. Defaults to True.
-        tracker_class (Type[BaseStateTracker]): The class used to track PDF state
-            (Graphics/Text) during parsing. Defaults to :class:`BaseStateTracker`.
+        tracker_class (Type[StateTracker]): The class used to track PDF state
+            (Graphics/Text) during parsing. Defaults to :class:`StateTracker`.
             Users can subclass this to add custom logic (e.g., font geometry tracking).
         tracker_args (Tuple): Positional arguments passed to the ``tracker_class`` constructor.
         tracker_kwargs (Dict[str, Any]): Keyword arguments passed to the ``tracker_class`` constructor.
@@ -47,7 +47,7 @@ class ProcessingOptions:
 
     optimize: bool = True
     recurse_xobjects: bool = True
-    tracker_class: Type[BaseStateTracker] = BaseStateTracker
+    tracker_class: Type[StateTracker] = StateTracker
     tracker_args: Tuple = field(default_factory=tuple)
     tracker_kwargs: Dict[str, Any] = field(default_factory=dict)
     visited_streams: Set[int] = field(default_factory=set)

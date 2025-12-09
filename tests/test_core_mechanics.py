@@ -1,11 +1,10 @@
 # tests/test_core_mechanics.py
 import numpy as np
 import pytest
-from pikepdf import String
 
-from pdfbeaver.base_state_tracker import BaseStateTracker
 from pdfbeaver.editor import StreamEditor
 from pdfbeaver.registry import HandlerRegistry
+from pdfbeaver.state_tracker import StateTracker
 
 
 def string_in_pdf_bytes(target_str: str, content_stream: bytes) -> bool:
@@ -36,7 +35,7 @@ def test_passthrough_unregistered_ops(clean_registry):
     # MOCK DATA: Updated to match the dict keys yielded by StreamStateIterator
     source = [{"operator": "q", "operands": [], "raw_bytes": b"q", "state": {}}]
 
-    editor = StreamEditor(iter(source), clean_registry, BaseStateTracker())
+    editor = StreamEditor(iter(source), clean_registry, StateTracker())
     result = editor.process()
 
     assert result.strip() == b"q"
@@ -56,7 +55,7 @@ def test_interception_and_modification(clean_registry):
         {"operator": "ET", "operands": [], "raw_bytes": b"ET", "state": {}},
     ]
 
-    editor = StreamEditor(iter(source), clean_registry, BaseStateTracker())
+    editor = StreamEditor(iter(source), clean_registry, StateTracker())
     result = editor.process()
 
     # Check that 'Secret' is gone and 'Redacted' is there
@@ -76,7 +75,7 @@ def test_state_tracking_mechanics():
     calculating it from operators), we test that it correctly ingests data
     and computes the Text Render Matrix (TRM).
     """
-    tracker = BaseStateTracker()
+    tracker = StateTracker()
 
     # 1. Simulate an incoming state snapshot (as if pdfminer processed 'cm')
     # CTM = Translate(50, 50) -> [1, 0, 0, 1, 50, 50]

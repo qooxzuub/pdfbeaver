@@ -1,13 +1,12 @@
 # tests/test_fuzzing.py
-import pikepdf
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from pdfbeaver.base_state_tracker import BaseStateTracker
 from pdfbeaver.editor import StreamEditor
 from pdfbeaver.optimization import optimize_ops
 from pdfbeaver.registry import HandlerRegistry
+from pdfbeaver.state_tracker import StateTracker
 
 from .strategies import pdf_step_stream, pdf_stream_instructions
 
@@ -59,7 +58,7 @@ def test_fuzz_editor_pipeline(steps):
     Property: The StreamEditor should ingest any sequence without crashing.
     """
     registry = HandlerRegistry()
-    tracker = BaseStateTracker()
+    tracker = StateTracker()
 
     # Mock the iterator
     editor = StreamEditor(iter(steps), registry, tracker)

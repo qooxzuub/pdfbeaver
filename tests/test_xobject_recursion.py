@@ -1,5 +1,4 @@
 import pikepdf
-import pytest
 
 import pdfbeaver as beaver
 

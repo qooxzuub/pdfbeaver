@@ -30,7 +30,7 @@ def extract_text_position(state: Dict[str, Any]) -> np.ndarray:
     ctm = state["ctm"]
 
     # CASE A: CTM is a NumPy Array (3x3)
-    # Used by BaseStateTracker
+    # Used by StateTracker
     if isinstance(ctm, np.ndarray) and ctm.shape == (3, 3):
         # Point vector [x, y, 1]
         local_point = np.array([tx, ty, 1.0])
