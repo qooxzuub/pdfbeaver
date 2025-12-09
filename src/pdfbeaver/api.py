@@ -28,29 +28,39 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ProcessingOptions:
-    """Configuration options for the stream modification process.
-
-    Attributes:
-        optimize (bool): If True, runs a peephole optimizer on the output stream
-            to remove dead stores and consolidate arithmetic (e.g., combining
-            absolute text matrices into relative moves). Defaults to True.
-        recurse_xobjects (bool): If True, recursively descends into and modifies
-            Form XObjects found in the page resources. Defaults to True.
-        tracker_class (Type[StateTracker]): The class used to track PDF state
-            (Graphics/Text) during parsing. Defaults to :class:`StateTracker`.
-            Users can subclass this to add custom logic (e.g., font geometry tracking).
-        tracker_args (Tuple): Positional arguments passed to the ``tracker_class`` constructor.
-        tracker_kwargs (Dict[str, Any]): Keyword arguments passed to the ``tracker_class`` constructor.
-        visited_streams (Set[int]): Internal set used to prevent infinite recursion
-            in malformed PDFs with cyclic XObject references.
-    """
+    """Configuration options for the stream modification process."""
 
     optimize: bool = True
+    """If True, runs a peephole optimizer on the output stream to
+    remove dead stores and consolidate arithmetic (e.g., combining
+    absolute text matrices into relative moves). Defaults to True.
+
+    """
+
     recurse_xobjects: bool = True
+    """If True, recursively descends into and modifies Form XObjects
+    found in the page resources. Defaults to True.
+
+    """
+
     tracker_class: Type[StateTracker] = StateTracker
+    """The class used to track PDF state (Graphics/Text) during
+    parsing. Defaults to :class:`StateTracker`.  Users can subclass
+    this to add custom logic (e.g., font geometry tracking).
+
+    """
+
     tracker_args: Tuple = field(default_factory=tuple)
+    """Positional arguments passed to the ``tracker_class`` constructor."""
+
     tracker_kwargs: Dict[str, Any] = field(default_factory=dict)
+    """Keyword arguments passed to the ``tracker_class`` constructor."""
+
     visited_streams: Set[int] = field(default_factory=set)
+    """Internal set used to prevent infinite recursion in malformed
+    PDFs with cyclic XObject references.
+
+    """
 
 
 def modify_page(

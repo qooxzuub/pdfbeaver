@@ -30,8 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class StreamStateIterator(PDFPageInterpreter):
-    """
-    Iterates over a content stream, yielding detailed state steps.
+    """Iterates over a content stream, yielding detailed state steps.
 
     Inherits from ``pdfminer.PDFPageInterpreter``. Instead of just executing
     commands, it yields a dictionary for every operator containing:
@@ -40,16 +39,17 @@ class StreamStateIterator(PDFPageInterpreter):
     * ``operands``: List of operands
     * ``state_after``: A snapshot of the graphics/text state *after* execution.
     * ``raw``: The raw bytes corresponding to this instruction.
+
+    Just like its parent class, you must call the method
+    ``init_resources(self, resource: Dict[object, object])``` in order
+    to initialize resources.
+
     """
 
     def __init__(self, rsrcmgr: PDFResourceManager, device: PDFDevice):
         super().__init__(rsrcmgr, device)
         self.init_state(ctm=(1, 0, 0, 1, 0, 0))
         super().init_resources({})
-
-    def init_resources(self, resources: Dict[object, object]):
-        """Expose resource initialization publically."""
-        super().init_resources(resources)
 
     def capture_state(self) -> Dict[str, Any]:
         """Captures and returns a snapshot of current graphics and text state."""
@@ -131,7 +131,6 @@ class StreamStateIterator(PDFPageInterpreter):
         """Executes operator logic, captures state, and extracts raw bytes."""
 
         # if op_name in ('Tj', 'TJ'):
-        # breakpoint()
         # 1. Execute Internal Logic (State Tracking)
         func_name = f"do_{op_name}"
         if hasattr(self, func_name):
@@ -211,7 +210,6 @@ class StreamStateIterator(PDFPageInterpreter):
             # Case 1: It is an Operator (Keyword)
             if isinstance(obj, PSKeyword):
                 op_name = obj.name.decode("ascii")
-                # breakpoint()
                 step_data, cmd_end_pos = self._process_operator(
                     op_name, proc_stack, parser, final_bytes, cmd_start_pos
                 )
@@ -256,7 +254,6 @@ class StreamStateIterator(PDFPageInterpreter):
         where Delta = [0,0,0;0,0,0;tx,ty,0]
 
         """
-        # breakpoint()
         # print(f"Before do_Td: {self.textstate}")
         a, b, c, d, e, f = self.textstate.matrix
 
@@ -294,48 +291,43 @@ class StreamStateIterator(PDFPageInterpreter):
         Or is it calling the parent implementation?? FIXME CHECK
 
         """
-        if self.textstate.font is None:
-            return
-        # breakpoint()
         ts = self.textstate
-        fs = ts.fontsize
+        if ts.font is None:
+            return
         h_scale = ts.scaling / 100.0
-        tc = ts.charspace
-        tw = ts.wordspace
-
         tx_accum = 0.0
 
         for item in seq:
             if isinstance(item, (int, float)):
                 # Kerning: -num / 1000 * fontsize * h_scale
-                tx_accum -= (item / 1000.0) * fs * h_scale
+                tx_accum -= (item / 1000.0) * ts.fontsize * h_scale
             elif isinstance(item, (bytes, str)):
                 # 1. Glyph Widths (scaled by font size)
-                w_glyphs = ts.font.string_width(item) * fs
+                w_glyphs = ts.font.string_width(item) * ts.fontsize
 
                 # 2. Character Spacing (Tc)
                 # Heuristic: 1 byte = 1 char (correct for Type1/TrueType, approx for CID)
-                num_chars = len(item)
-                w_char_spacing = num_chars * tc
+                w_char_spacing = len(item) * ts.charspace
 
                 # 3. Word Spacing (Tw) applied to ASCII spaces (32)
                 # Only applies if font is not strictly symbolic/multibyte?
                 # PDF Spec is complex, but checking for byte 32 is the standard heuristic.
-                num_spaces = (
-                    item.count(b" ") if isinstance(item, bytes) else item.count(" ")
-                )
-                w_word_spacing = num_spaces * tw
+                w_word_spacing = item.count(b" " if isinstance(item, bytes) else " ") * ts.wordspace
 
                 # Sum and apply Horizontal Scaling
                 tx_accum += (w_glyphs + w_char_spacing + w_word_spacing) * h_scale
 
+        self._set_matrices_for_kerning_block(ts, tx_accum)
+
+    def _set_matrices_for_kerning_block(self, ts, tx_accum):
         # Apply Translation to Text Matrix
         # Tm = [a b 0 c d 0 e f 1]
         # We advance along the 'a' and 'b' vectors of the text line
         a, b, c, d, e, f = ts.matrix
         # Move e, f by the calculated x-displacement projected onto a, b
-        self.textstate.matrix = (a, b, c, d, e + tx_accum * a, f + tx_accum * b)
-        g, h = self.textstate.linematrix
+        ts.matrix = (a, b, c, d, e + tx_accum * a, f + tx_accum * b)
+
         # We want to keep T_{lm} unchanged!!
         # This is what the math gives. Unless I made a mistake...
-        self.textstate.linematrix = (g - tx_accum * a, h - tx_accum * b)
+        g, h = ts.linematrix
+        ts.linematrix = (g - tx_accum * a, h - tx_accum * b)

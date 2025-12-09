@@ -36,8 +36,6 @@ from .utils.pdf_geometry import extract_text_position
 if TYPE_CHECKING:
     from pikepdf.models.image import PdfInlineImage
 
-    from ..engines.state_tracker import TargetStateTracker
-
 logger = logging.getLogger(__name__)
 
 # --- Strict Type Definitions ---
@@ -86,7 +84,6 @@ class StreamContext:
 
     pre_input: Optional[Dict[str, Any]]
     post_input: Optional[Dict[str, Any]]
-    output: "TargetStateTracker"
     pdf: Optional[pikepdf.Pdf] = None
     page: Optional[pikepdf.Page] = None
     container: Optional[pikepdf.Object] = None
@@ -95,8 +92,20 @@ class StreamContext:
 
 @runtime_checkable
 class StreamHandler(Protocol):
+    """
+    Protocol defining the interface for stream handlers.
+
+    Handlers implement logic to intercept, modify, or pass through specific
+    PDF operators during the stream editing process.
+    """
+
     @property
-    def modified_operators(self) -> Set[str]: ...
+    def modified_operators(self) -> Set[str]:
+        """
+        The set of operator names (e.g., "Tj", "cm") this handler acts upon.
+
+        The editor uses this set to determine which operators to intercept and buffer.
+        """
 
     def handle_operator(
         self,
@@ -104,7 +113,20 @@ class StreamHandler(Protocol):
         operands: List[NormalizedOperand],
         context: StreamContext,
         raw_bytes: bytes,
-    ) -> List[Union[ContentStreamInstruction, bytes]]: ...
+    ) -> List[Union[ContentStreamInstruction, bytes]]:
+        """
+        Process a specific operator and return modified instructions.
+
+        Args:
+            op: The operator string (e.g., "Tj").
+            operands: A list of normalized operands (numbers, strings, pikepdf objects).
+            context: The execution context containing state and document references.
+            raw_bytes: The original binary data for this instruction.
+
+        Returns:
+            A list of new instructions (tuples or bytes) or the sentinel
+            `ORIGINAL_BYTES` to pass the original content through unchanged.
+        """
 
 
 # --- Main Editor Class ---
@@ -286,7 +308,6 @@ class StreamEditor:
         ctx = StreamContext(
             pre_input=pre_input_state,
             post_input=post_input_state,
-            output=self.tracker,
             page=self.page,
             pdf=self.pdf,
             container=self.container,

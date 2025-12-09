@@ -6,8 +6,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from pikepdf import Operator
-
 logger = logging.getLogger(__name__)
 
 TZ_TOL = 0.001

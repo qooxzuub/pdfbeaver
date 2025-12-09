@@ -1,4 +1,7 @@
 # src/pdf_font_replacer/utils/pdf_conversion.py
+"""
+Type conversion helpers for bridging pdfminer, pikepdf, and Python native types.
+"""
 from decimal import Decimal
 from typing import Any, List
 
@@ -8,6 +11,10 @@ from pdfminer.psparser import PSKeyword, PSLiteral
 
 
 def miner_matrix_to_np(m: List) -> np.ndarray:
+    """
+    Convert a 6-element PDF transformation matrix list [a, b, c, d, e, f]
+    into a 3x3 NumPy affine transformation matrix.
+    """
     # safeguard
     if isinstance(m, np.ndarray):
         return m

@@ -20,9 +20,7 @@ Registry & Handlers
 State Tracking
 --------------
 
-.. autoclass:: BaseStateTracker
-    :members:
-.. autoclass:: LiterateStateTracker
+.. autoclass:: StateTracker
     :members:
 .. autoclass:: StreamContext
     :members:
