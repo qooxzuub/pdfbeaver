@@ -50,7 +50,9 @@ def test_consolidate_various_types(iterator):
     streams = [MockStreamA(), MockStreamB(), "C"]
 
     result = iterator._consolidate_streams(streams)
-    assert result == b"ABC"
+    # separate with consolidated streams with spaces, if necessary.
+    # This avoids ["1 0 0 1 2 3 cm","BT"] becoming "1 0 0 1 2 3 cmBT".
+    assert result == b"A B C"
 
 
 # --- 2. Parser robustness ---

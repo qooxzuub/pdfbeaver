@@ -186,7 +186,6 @@ class StreamEditor:
         Syntactic Sugar logic.
         Converts a flexible user return value into a standardized (operands, op) tuple.
         """
-        # breakpoint()
         if isinstance(item, tuple):
             return self._normalize_instruction_tuple(item)
         if isinstance(item, bytes):
@@ -252,7 +251,6 @@ class StreamEditor:
         self._call_special_handler("^", None)
 
         for step in self.source_iter:
-            # breakpoint()
             pre_input_state = self._process_step(step, pre_input_state)
 
         self._call_special_handler("$", pre_input_state)
@@ -267,7 +265,6 @@ class StreamEditor:
         operands = step["operands"]
         post_input_state = step["state"]
         raw_bytes = step.get("raw_bytes", b"")
-
         # 1. Update Tracker with PRE-input state from engine
         if pre_input_state:
             self.tracker.set_state(pre_input_state)
@@ -277,7 +274,6 @@ class StreamEditor:
 
             if op in self.handler_ops:
                 # Case A: The Handler wants to modify this
-                # breakpoint()
                 self._call_handler(
                     op, operands, raw_bytes, pre_input_state, post_input_state
                 )
@@ -347,7 +343,6 @@ class StreamEditor:
                 self._pending_ops.append((operands, Operator(op)))
             else:
                 normalized = self._normalize_instruction(item)
-                # breakpoint()
                 if isinstance(normalized, bytes):
                     # Direct binary injection
                     self._flush_pending()

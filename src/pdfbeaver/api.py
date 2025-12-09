@@ -169,7 +169,6 @@ def _modify_content_container(
     """Core worker: modifies the content stream of a Page or XObject."""
 
     iterator = _make_iterator_with_resources(resources)
-    # breakpoint()
 
     stream_list = _get_clean_content_streams(container)
     if not stream_list:
@@ -205,7 +204,6 @@ def _modify_content_container(
 def _get_clean_content_streams(container: Any) -> List[Any]:
     """
     Return a flat list of clean content streams from a Page, Stream, Array, or raw object.
-    Refactored for low cognitive complexity; behavior identical to original.
     """
     raw_contents = _resolve_raw_contents(container)
     items = _normalize_to_list(raw_contents)
@@ -358,7 +356,12 @@ def _convert_to_pdfminer_resources(obj: Any, strip_slash=False) -> Any:
         result = [_convert_to_pdfminer_resources(v) for v in obj]
     elif isinstance(obj, pikepdf.Stream):
         attrs = _convert_to_pdfminer_resources(obj.stream_dict)
-        result = PDFStream(attrs, obj.read_bytes())
+        # We pass the original raw (probably compressed) bytes.
+        # This is probably not very efficient?
+        # Might be better to pass the decompressed bytes (with read_bytes);
+        # we'd need to fix up the stream dictionary attrs in that case,
+        # at least removing any /Filter.
+        result = PDFStream(attrs, obj.read_raw_bytes())
     elif isinstance(obj, (str, pikepdf.String)):
         s = str(obj)
         if strip_slash and s.startswith("/"):

@@ -105,19 +105,20 @@ class StreamStateIterator(PDFPageInterpreter):
                 s = s.resolve()
             if hasattr(s, "get_data"):
                 data = s.get_data()
-                combined_data.extend(data)
             elif hasattr(s, "get_rawdata"):
                 data = s.get_rawdata()
-                combined_data.extend(data)
             elif hasattr(s, "read_bytes"):
                 data = s.read_bytes()
-                combined_data.extend(data)
             elif isinstance(s, bytes):
-                combined_data.extend(s)
+                data = s
             else:
                 data = str(s).encode("latin1")
-                combined_data.extend(data)
-        return bytes(combined_data)
+
+            combined_data.extend(data)
+            if not data[-1:].isspace():
+                combined_data.extend(b" ")
+
+        return bytes(combined_data.strip())
 
     def _process_operator(
         self,
@@ -312,7 +313,9 @@ class StreamStateIterator(PDFPageInterpreter):
                 # 3. Word Spacing (Tw) applied to ASCII spaces (32)
                 # Only applies if font is not strictly symbolic/multibyte?
                 # PDF Spec is complex, but checking for byte 32 is the standard heuristic.
-                w_word_spacing = item.count(b" " if isinstance(item, bytes) else " ") * ts.wordspace
+                w_word_spacing = (
+                    item.count(b" " if isinstance(item, bytes) else " ") * ts.wordspace
+                )
 
                 # Sum and apply Horizontal Scaling
                 tx_accum += (w_glyphs + w_char_spacing + w_word_spacing) * h_scale
