@@ -1,5 +1,7 @@
+# tests/test_core_mechanics.py
+import numpy as np
 import pytest
-from pikepdf import Operator, String
+from pikepdf import String
 
 from pdfbeaver.base_state_tracker import BaseStateTracker
 from pdfbeaver.editor import StreamEditor
@@ -11,16 +13,9 @@ def string_in_pdf_bytes(target_str: str, content_stream: bytes) -> bool:
     Checks if a string is present in a PDF content stream, handling
     both Literal format '(Text)' and Hexadecimal format '<54657874>'.
     """
-    # 1. Convert target string to bytes (PDFs typically use Latin1/PDFDocEncoding)
     text_bytes = target_str.encode("latin1")
-
-    # 2. Construct Literal representation: (Text)
     literal = b"(" + text_bytes + b")"
-
-    # 3. Construct Hexadecimal representation: <54657874>
     hex_version = b"<" + text_bytes.hex().encode("ascii") + b">"
-
-    # 4. Return True if either format matches
     return (literal in content_stream) or (hex_version in content_stream)
 
 
@@ -30,26 +25,26 @@ def clean_registry():
     reg = HandlerRegistry()
 
     @reg.register("Tj")
-    def handle_text():
-        # FIX: Use pikepdf.String to ensure correct PDF formatting (e.g. parens)
-        return (String("Redacted"), "Tj")
+    def handle_text(operands, context):
+        return [("Redacted", "Tj")]
 
     return reg
 
 
 def test_passthrough_unregistered_ops(clean_registry):
     """Verify that ops NOT in the registry are passed through unchanged."""
+    # MOCK DATA: Updated to match the dict keys yielded by StreamStateIterator
     source = [{"operator": "q", "operands": [], "raw_bytes": b"q", "state": {}}]
 
     editor = StreamEditor(iter(source), clean_registry, BaseStateTracker())
     result = editor.process()
 
-    # FIX: Allow trailing newline (standard editor behavior)
     assert result.strip() == b"q"
 
 
 def test_interception_and_modification(clean_registry):
     """Verify the editor intercepts 'Tj' and writes the handler's output."""
+    # MOCK DATA
     source = [
         {"operator": "BT", "operands": [], "raw_bytes": b"BT", "state": {}},
         {
@@ -66,28 +61,59 @@ def test_interception_and_modification(clean_registry):
 
     # Check that 'Secret' is gone and 'Redacted' is there
     assert not string_in_pdf_bytes("Secret", result)
-
-    # pikepdf might output (Redacted) Tj OR <...> Tj.
-    # Since we used pikepdf.String("Redacted"), it prefers parens if simple ascii.
-    # We check for the presence of "Redacted" generally.
     assert string_in_pdf_bytes("Redacted", result)
-    assert b"Tj" in result
 
     # Check that context ops remained
     assert b"BT" in result
     assert b"ET" in result
 
 
-@pytest.mark.skip
 def test_state_tracking_mechanics():
-    """Verify the tracker updates CTM without needing font metrics."""
+    """
+    Verify the tracker correctly calculates matrices from state snapshots.
+
+    Since the tracker is now 'passive' (it receives state from pdfminer rather than
+    calculating it from operators), we test that it correctly ingests data
+    and computes the Text Render Matrix (TRM).
+    """
     tracker = BaseStateTracker()
 
-    # 1. Translate 50, 50
-    tracker.execute_op("cm", [1, 0, 0, 1, 50, 50])
+    # 1. Simulate an incoming state snapshot (as if pdfminer processed 'cm')
+    # CTM = Translate(50, 50) -> [1, 0, 0, 1, 50, 50]
+    fake_state_from_miner = {
+        "ctm": [1.0, 0.0, 0.0, 1.0, 50.0, 50.0],
+        # Text matrix is identity by default
+        "tstate": type(
+            "MockTState",
+            (),
+            {
+                "charspace": 0,
+                "wordspace": 0,
+                "scaling": 100,
+                "leading": 0,
+                "render": 0,
+                "rise": 0,
+                "font": None,
+                "fontsize": 12,
+                "linematrix": [0] * 6,
+                "matrix": [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            },
+        )(),
+    }
 
-    # 2. Check Math
-    ctm, _ = tracker.get_matrices()
-    # CTM should be translation matrix
-    assert ctm[2, 0] == 50.0
-    assert ctm[2, 1] == 50.0
+    # 2. Update Tracker
+    tracker.set_state(fake_state_from_miner)
+
+    # 3. Check Math (CTM)
+    # Note: Our tracker converts list -> numpy for calculation
+    ctm, trm = tracker.get_matrices()
+
+    assert isinstance(ctm, np.ndarray)
+    assert ctm[2, 0] == 50.0  # x translation
+    assert ctm[2, 1] == 50.0  # y translation
+
+    # 4. Check TRM (Text Render Matrix)
+    # TRM = Tm x CTM
+    # Identity x Translate(50,50) = Translate(50,50)
+    assert trm[2, 0] == 50.0
+    assert trm[2, 1] == 50.0

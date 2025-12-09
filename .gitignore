@@ -19,3 +19,5 @@ test_artifacts/
 complexipy-snapshot.json
 _build/
 build/
+tests/cache/
+smoke_outputs/

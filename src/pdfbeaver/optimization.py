@@ -3,8 +3,8 @@
 Logic for optimizing PDF content streams (peephole optimization).
 """
 import logging
-from dataclasses import dataclass
-from typing import Any, List, Optional, Set, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pikepdf import Operator
 
@@ -17,6 +17,12 @@ ROUNDING_PLACES = 4
 
 CONVERSION_ERRORS = (ValueError, IndexError, TypeError, OverflowError)
 
+# SIMPLE_STATE_OPS = {
+#     "g", "G", "rg", "RG", "k", "K",  # Colors
+#     "w", "J", "j", "M",              # Line attributes
+#     "i", "ri"                        # Flatness, Rendering Intent
+# }
+
 
 @dataclass
 class OptimizerState:
@@ -26,6 +32,7 @@ class OptimizerState:
     current_tf_name: Optional[str] = None
     current_tf_size: Optional[float] = None
     current_tm: Optional[List[float]] = None
+    simple_states: Dict[str, List[Any]] = field(default_factory=dict)
 
 
 def optimize_ops(ops: List[Tuple[List[Any], Any]]) -> List[Tuple[List[Any], Any]]:
@@ -60,6 +67,7 @@ optimize_ops.relevant_operators = {
     "ET",
     "Tf",
     "Tz",
+    # *SIMPLE_STATE_OPS,
 }
 
 

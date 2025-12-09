@@ -142,6 +142,11 @@ class StreamStateIterator(PDFPageInterpreter):
         # 3. Extract Raw Bytes for Pass-Through
         cmd_end_pos = self._get_parser_pos(parser)
 
+        if cmd_end_pos < cmd_start_pos:
+            # pdfminer seems to set position to 0 on EOF
+            # so we just consume everything remaining
+            cmd_end_pos = len(final_bytes)
+
         # Check range validity
         if cmd_end_pos >= cmd_start_pos >= 0:
             raw_bytes = final_bytes[cmd_start_pos:cmd_end_pos]
@@ -201,7 +206,7 @@ class StreamStateIterator(PDFPageInterpreter):
             # Case 1: It is an Operator (Keyword)
             if isinstance(obj, PSKeyword):
                 op_name = obj.name.decode("ascii")
-
+                # breakpoint()
                 step_data, cmd_end_pos = self._process_operator(
                     op_name, proc_stack, parser, final_bytes, cmd_start_pos
                 )

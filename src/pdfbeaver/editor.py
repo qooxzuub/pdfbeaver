@@ -230,6 +230,7 @@ class StreamEditor:
         self._call_special_handler("^", None)
 
         for step in self.source_iter:
+            # breakpoint()
             pre_input_state = self._process_step(step, pre_input_state)
 
         self._call_special_handler("$", pre_input_state)

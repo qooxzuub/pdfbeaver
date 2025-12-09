@@ -56,10 +56,11 @@ def normalize_pdf_operand(operand: Any) -> Any:
     """
     Converts pdfminer-specific types (PSLiteral) into pikepdf-compatible types.
     """
-    if isinstance(operand, PSLiteral):
-        return pikepdf.Name(f"/{operand.name}")
-    if isinstance(operand, PSKeyword):
-        return pikepdf.Name(f"/{operand.name}")
+    if isinstance(operand, (PSLiteral, PSKeyword)):
+        name = operand.name
+        if isinstance(name, bytes):
+            name = name.decode("ascii")
+        return pikepdf.Name(f"/{name}")
     if isinstance(operand, bytes):
         return operand
     if isinstance(operand, list):

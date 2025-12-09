@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=65.5", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-font-replacer"
+version = "0.1.0"
+description = "A tool for font replacement in PDFs."
+authors = [
+    { name = "qooxzoob", email = "154452450+qooxzuub@users.noreply.github.com" }
+]
+requires-python = ">=3.8"
+
+dependencies = [
+    "pikepdf>=10.0,<11.0",
+    "pydantic>=2.0,<3.0",
+    "pdfminer.six==20251107",
+    "numpy",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+markers = [ "visual" ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-coverage",
+    "hypothesis",
+    "black",
+    "pylint",
+    "pytest-mock",
+    "isort",
+]
+
+
+[tool.isort]
+profile = "black"
