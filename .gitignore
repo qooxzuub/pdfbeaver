@@ -21,3 +21,4 @@ _build/
 build/
 tests/cache/
 smoke_outputs/
+dist/
