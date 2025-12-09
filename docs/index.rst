@@ -1,6 +1,11 @@
 pdfbeaver documentation
 =======================
 
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
+   :end-before: <!-- end docs-include -->
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
@@ -14,3 +19,11 @@ pdfbeaver documentation
    :caption: API Reference
 
    api
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Project Info
+
+   changelog
+   credits
+

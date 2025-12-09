@@ -1,14 +1,19 @@
 # pdfbeaver
 
-> **A context-aware PDF content stream editor.**
+> **A Python library for context-aware PDF content stream editing.**
+<img align="right" width="100" src="https://raw.githubusercontent.com/qooxzuub/pdfbeaver/main/.github/assets/beaver-emoji.svg">
 
-![Coverage](https://img.shields.io/badge/coverage-83%25-green) ![Tests](https://img.shields.io/badge/tests-passing-brightgreen) ![Python](https://img.shields.io/badge/python-3.10+-blue)
+[![PyPI](https://img.shields.io/pypi/v/pdfbeaver)](https://pypi.org/project/pdfbeaver/)
+[![CI](https://github.com/qooxzuub/pdfbeaver/actions/workflows/ci.yml/badge.svg)](https://github.com/qooxzuub/pdfbeaver/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/qooxzuub/pdfbeaver/graph/badge.svg)](https://codecov.io/gh/qooxzuub/pdfbeaver)
+[![Documentation Status](https://readthedocs.org/projects/pdfbeaver/badge/?version=latest)](https://pdfbeaver.readthedocs.io/en/latest/?badge=latest)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pdfbeaver)](https://pypi.org/project/pdfbeaver/)
 
-**beaver**: an animal which manipulates water streams.
+**beaver**: a helpful animal which manipulates water streams.
 
-**pdfbeaver**: a library which manipulates PDF content streams.
+**pdfbeaver**: a helpful Python library for manipulating PDF content streams.
 
-pdfbeaver bridges the gap between **reading** PDFs (calculating text positions, tracking graphics state) and **writing** PDFs (injecting operators, removing content). Using pdfbeaver, you can easily write pdf content stream filters which are aware of "where you are on the page" at any given moment inside the content stream.
+pdfbeaver is a Python library that bridges the gap between **reading** PDFs (calculating text positions, tracking graphics state) and **writing** PDFs (injecting operators, removing content). Using pdfbeaver, you can easily write PDF content stream filters in Python which are aware of "where you are on the page" at any given moment inside the content stream.
 
 Example applications:
 
@@ -17,7 +22,7 @@ Example applications:
 - optimize vector paths in PDF graphics
 - replace fonts in a PDF file
 
-It is built on top of [pikepdf](https://github.com/pikepdf/pikepdf) (and [qpdf](https://github.com/pikepdf/pikepdf)) for PDF writing/manipulation and [pdfminer.six](https://github.com/pdfminer/pdfminer.six) for stream parsing and state tracking.
+It is built on top of [pdfminer.six](https://github.com/pdfminer/pdfminer.six) for content stream parsing/state tracking, and [pikepdf](https://github.com/pikepdf/pikepdf) (and [qpdf](https://github.com/pikepdf/pikepdf)) for PDF writing/manipulation.
 
 ## 🚀 Key Features
 
@@ -32,8 +37,6 @@ It is built on top of [pikepdf](https://github.com/pikepdf/pikepdf) (and [qpdf](
 ```bash
 pip install pdfbeaver
 ```
-
-*(Note: Requires `pikepdf` and `pdfminer.six`)*
 
 ## ⚡ Quick Start
 
@@ -86,37 +89,12 @@ The `@register` decorator inspects your function signature. You can include any 
 - `pdf`: The `pikepdf.Pdf` document.
 - `page`: The `pikepdf.Page` object.
 
-## 🏗 Architecture
+<!-- end docs-include -->
 
-`pdfbeaver` solves the problem of mapping input geometry to output streams incrementally, allowing state to be interrogated mid-stream.
+## 📚 Documentation
 
-```mermaid
-graph LR
-    A[Input Stream] --> B[StreamStateIterator];
-    B --> C{State Tracker};
-    C --> D[Handler Registry];
-    D --> E[Stream Editor];
-    E --> F[Optimizer];
-    F --> G[Output Stream];
-```
-
-1. **StreamStateIterator:** Wraps `pdfminer` to interpret the stream byte-by-byte, updating a virtual graphics state (Matrices, Fonts).
-1. **HandlerRegistry:** Intercepts specific operators defined by the user.
-1. **StreamEditor:** Recompiles the stream. It injects modified operators or passes original raw bytes for maximum speed and fidelity.
-1. **Optimizer:** Runs a post-processing pass to clean up redundant operators (e.g., `1 0 0 rg` followed immediately by `0 1 0 rg`).
-
-## 📚 Advanced Usage
-
-### The `StreamContext`
-
-Every handler receives a `context` object containing:
-
-- `context.tracker`: The active state tracker (access `gstate`, `textstate`, `get_current_user_pos()`).
-- `context.page`: The `pikepdf.Page` object currently being processed.
-- `context.container`: The specific object being processed (could be a Page or a Form XObject).
-
-See `docs/` for documentation. (Hopefully this will appear on `readthedocs` some day.)
+See [ReadTheDocs](https://pdfbeaver.readthedocs.io).
 
 ## 📄 License
 
-MIT License. See `LICENSE` for details.
+MPL-2.0. See `LICENSE` for details.

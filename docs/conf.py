@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.napoleon',     # Parses Google/NumPy style
     'sphinx.ext.viewcode',     # Adds links to source code
     'sphinx.ext.intersphinx',  # Links to other libraries (like python docs)
+    "myst_parser",
 ]
 
 # Napoleon settings (optional but good defaults)

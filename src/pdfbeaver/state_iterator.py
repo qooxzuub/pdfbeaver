@@ -1,5 +1,4 @@
-# src/pdfbeaver/.state_iterator.py
-#!/usr/bin/env python3
+# src/pdfbeaver/state_iterator.py
 #
 # This file includes code adapted from pdfminer.six (https://github.com/pdfminer/pdfminer.six)
 # Copyright (c) 2004-2016 Yusuke Shinyama <yusuke at cs dot nyu dot edu>
