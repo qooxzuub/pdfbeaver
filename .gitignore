@@ -22,3 +22,4 @@ build/
 tests/cache/
 smoke_outputs/
 dist/
+pdfs/

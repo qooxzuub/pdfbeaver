@@ -1,4 +1,4 @@
-# src/pdf_font_replacer/utils/pdf_conversion.py
+# src/pdfbeaver/utils/pdf_conversion.py
 """
 Type conversion helpers for bridging pdfminer, pikepdf, and Python native types.
 """
