@@ -10,6 +10,7 @@ It provides a stream-based editing model where users can register callbacks
 for specific PDF operators (like ``Tj`` for text or ``re`` for rectangles).
 """
 import logging
+from importlib.metadata import PackageNotFoundError, version
 
 from .api import ProcessingOptions, modify_page, process
 from .editor import ORIGINAL_BYTES, NormalizedOperand, StreamContext
@@ -17,6 +18,12 @@ from .registry import HandlerRegistry, default_registry
 from .state_tracker import StateTracker
 from .utils.pdf_conversion import normalize_pdf_operand
 from .utils.pdf_geometry import extract_text_position
+
+try:
+    __version__ = version("pdfbeaver")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
 
 # the easy decorator alias
 register = default_registry.register
